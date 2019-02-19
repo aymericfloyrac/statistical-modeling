@@ -22,6 +22,11 @@ dataset$average <- apply(dataset[,2:26],FUN=mean,MARGIN = 1)
 pairs(cbind(dataset$LOAD,dataset$average))
 
 #création d'une base cool 
+library(dplyr)
+
+holidays<-read.csv('usholidays.csv',header=T)
+holidays$date<-as.factor(holidays$Date)
+
 createDs <-function(ds){
   df <- ds[!is.na(s$LOAD),] #on crée une copie en retirant les NA
   
@@ -53,6 +58,12 @@ createDs <-function(ds){
   }
   df$day <- weekdays(as.Date(df$date))
   df$weekend <- as.integer(df$day %in% c('Samedi','Dimanche'))
+  df <- left_join(df,holidays,by='date')
+  df$farniente <- 1-is.na(df$Holiday)
+  df$notworking<-df$farniente+df$weekend-df$farniente*df$weekend
+  df<-select(df,-c(X.y,Date,farniente,weekend,day))
+  df$heurepleine<-as.integer(!df$hour%in%seq(8,20))
+  
   return (df)
 }
 
