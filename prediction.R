@@ -2,7 +2,7 @@ setwd(dir = "/Users/aymeric/Documents/ENSAE/2A/Semestre 2/Séminaire statistique
 df <- read.csv('modified_data4.csv',header = T)
 
 #regression linéaire
-fit<-lm(LOAD~hour+date+month+year+average+maxload+minload+averageload+laggedtemp+maxtemp+mintemp+averagetemp+prevload+tempdiff+weekend+notworking+heurepleine, data=df)
+fit<-lm(LOAD~hour+month+year+average+maxload+minload+averageload+laggedtemp+maxtemp+mintemp+averagetemp+prevload+tempdiff+weekend+notworking+heurepleine, data=df)
 summary(fit)
 
 #regression LASSO
