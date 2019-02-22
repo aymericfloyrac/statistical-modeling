@@ -31,8 +31,8 @@ rcv <- cv.glmnet(x= x,y=df$LOAD,alpha = 0,family="gaussian",nfold=3)
 plot(rcv)
 best_ridge <- glmnet(x = x,y = df$LOAD,alpha = 0,family='gaussian',lambda = c(rcv$lambda.min))
 best_ridge$beta
-plot_glmnet(ridge, label=5,main = paste("Régression Ridge", "meilleur lambda =",rcv$lambda.min),xlab="Valeurs de Lambda", ylab="Valeur des coefficients")
-abline(v = rcv$lambda.min,col="red", lty=2)
+plot_glmnet(ridge, label=5,main = paste("Régression Ridge", "meilleur lambda =",rcv$lambda.min),xlab="Valeurs de log(Lambda)", ylab="Valeur des coefficients")
+abline(v = log(rcv$lambda.min),col="red", lty=2)
 Beta_ridge = data.frame(as.data.frame(as.matrix(best_ridge$beta)))
 xtable(Beta_ridge)
 
@@ -43,8 +43,8 @@ rcv <- cv.glmnet(x= x,y=df$LOAD,alpha = 1,family="gaussian",nfold=3)
 plot(rcv)
 best_lasso <- glmnet(x = x,y = df$LOAD,alpha = 1,family='gaussian',lambda = c(rcv$lambda.min))
 best_lasso$beta
-plot_glmnet(lasso, label = 5,  main = paste("Régression Lasso", "meilleur lambda =",rcv$lambda.min),xlab="Valeurs de Lambda", ylab="Valeur des coefficients")
-abline(v = rcv$lambda.min,col="red", lty=2)
+plot_glmnet(lasso, label = 5,  main = paste("Régression Lasso", "meilleur lambda =",rcv$lambda.min),xlab="Valeurs de log(Lambda)", ylab="Valeur des coefficients")
+abline(v = log(rcv$lambda.min),col="red", lty=2)
 Beta_lasso = data.frame(as.data.frame(as.matrix(best_lasso$beta)))
 xtable(Beta_lasso)
 
