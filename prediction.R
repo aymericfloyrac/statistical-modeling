@@ -6,17 +6,24 @@ df<-select(df,-c(farniente,day,Holiday,X.1,X.x,date))
 fit<-lm(LOAD~hour+month+year+average+maxload+minload+averageload+laggedtemp+maxtemp+mintemp+averagetemp+prevload+tempdiff+weekend+notworking+heurepleine, data=df)
 summary(fit)
 
-#regression LASSO
-library(lars)
+#regressions pénalisées
 library(dplyr)
 x = as.matrix(select(df,-c(X,LOAD)))
-lasso<-lars(x=x,y=df$LOAD)
-plot(lasso)
 
-#regression ridge
+
+##regression ridge
 library(glmnet)
-ridge <- glmnet(x = x,y = df$LOAD,alpha = 0,family='gaussian') #alpha=1 donne la pénalisation lasso
+library(plotmo)
+ridge <- glmnet(x = x,y = df$LOAD,alpha = 0,family='gaussian') #alpha=0 donne la pénalisation ridge
 best<-ridge$lambda.min
 ridge <- glmnet(x = x,y = df$LOAD,alpha = 0,family='gaussian',lambda = c(best))
 ridge$beta
-plot(ridge,label=T)
+plot_glmnet(ridge)
+
+##LASSO
+lasso <- glmnet(x = x,y = df$LOAD,alpha = 1,family='gaussian') #alpha=1 donne la pénalisation lasso
+best<-lasso$lambda.min
+lasso <- glmnet(x = x,y = df$LOAD,alpha = 1,family='gaussian',lambda = c(best))
+lasso$beta
+plot_glmnet(lasso)
+
