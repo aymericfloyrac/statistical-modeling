@@ -4,6 +4,9 @@ library(glmnet)
 library(plotmo)
 library(xtable)
 library(mgcv)
+library(tseries)
+library(urca)
+library(FitAR)
 
 
 setwd(dir = "/Users/aymeric/Documents/ENSAE/2A/Semestre 2/Séminaire statistiques" )
@@ -76,6 +79,38 @@ plot_glmnet(lasso, label = 5,  main = paste("Régression Lasso", "meilleur lambd
 abline(v = log(rcv$lambda.min),col="red", lty=2)
 Beta_lasso = data.frame(as.data.frame(as.matrix(best_lasso$beta)))
 xtable(Beta_lasso)
+
+
+
+
+###############
+##Séries temp##
+###############
+#Rien de robuste dans cette sous partie
+
+plot.ts(df$LOAD, main = "LOAD au cours du temps", xlab = "Temps", ylab = "Valeur de la consommation")
+
+#Autocorrélogramme et autocorrélogramme partiel
+acf(df$LOAD,lag.max = 15, main="Autocorrélogramme de la série", xlab="Retard")
+pacf(df$LOAD, lag.max = 15, main = "Autocorrélogramme partiel", xlab = "Retard")
+
+
+#Xt - Xt-1 (au pas horaire)
+acf(diff(df$LOAD, differences = 1))
+pacf(diff(df$LOAD, differences = 1))
+
+#Test de Dickey-Fuller : pour la stationnarité de la série temp
+adf.test(df$LOAD, alternative = "stationary", k=0)
+
+#ARIMA (pas du tout le bon modèle)
+arima(df$LOAD, order = c(2,0,0))
+
+#Arime forecats
+test.arima.200 <- arima(df$LOAD, order = c(2,0,0))
+pred <- predict(test.arima.200, n.ahead = 100)
+
+
+
 
 ##########
 ##GAM#####
