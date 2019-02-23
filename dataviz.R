@@ -1,3 +1,6 @@
+library(ggplot2)
+library(scales)
+
 setwd(dir = "/Users/aymeric/Documents/ENSAE/2A/Semestre 2/Séminaire statistiques")
 df <- read.csv('modified_data4.csv',header = T)
 library(dplyr)
