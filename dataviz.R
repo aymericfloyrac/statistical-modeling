@@ -18,3 +18,31 @@ plot(df2$hour,df2$LOAD, main = "Consommation en fonction de l'heure", xlab = "He
 #Sur un subset en particulier
 ds_janv_2007 = df2[which(df2$year == "2007" & df2$month == "1"),]
 plot.ts(ds_janv_2007$LOAD, main = "LOAD au cours du mois de Janvier", xlab = "Temps", ylab = "Valeur de la consommation")
+
+
+
+t = df  %>%  group_by(month,year) %>% dplyr::summarize(Mean = mean(LOAD, na.rm=TRUE))
+
+ggplot(t, aes(month, Mean , group=year, colour=factor(year))) +
+  geom_line() +
+  geom_point() +
+  labs(x="Mois",y = 'LOAD en moyenne', colour="Year") +
+  theme_bw()
+
+
+# Year plot
+t$label <- as.factor(paste("Mean", t$year, sep = ""))
+t$b <-month.abb[t$month]
+# Superposition des années en radar
+ggplot(data = t, aes(x = month, y = Mean, color = label)) + 
+  geom_line() +
+  geom_point() + 
+  coord_polar() +
+  scale_x_continuous(breaks = 1:12,labels =  month.name) +
+  theme(legend.position = "bottom") +
+  theme_bw()
+
+
+
+
+
