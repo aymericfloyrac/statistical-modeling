@@ -22,13 +22,23 @@ ds_janv_2007 = df[which(df$year == "2007" & df$month == "1"),]
 plot.ts(ds_janv_2007$LOAD, main = "LOAD au cours du mois de Janvier", xlab = "Temps", ylab = "Valeur de la consommation")
 
 
-
+###########
 t = df  %>%  group_by(month,year) %>% dplyr::summarize(Mean = mean(LOAD, na.rm=TRUE))
+t2 = df  %>%  group_by(hour, month) %>% dplyr::summarize(Mean = mean(LOAD, na.rm=TRUE))
+
+
 
 ggplot(t, aes(month, Mean , group=year, colour=factor(year))) +
   geom_line() +
   geom_point() +
-  labs(x="Mois",y = 'LOAD en moyenne', colour="Year") +
+  labs(title ="Consommation moyenne d'électricité par mois selon l'année",x="Mois",y = 'LOAD en moyenne', colour="Année") +
+  theme_bw()
+
+
+ggplot(t2, aes(hour, Mean , group=month, colour=factor(month))) +
+  geom_line() +
+  geom_point() +
+  labs(title ="Consommation moyenne d'électricité par heure selon le mois",x="Heure",y = 'LOAD en moyenne', colour="Mois") +
   theme_bw()
 
 
