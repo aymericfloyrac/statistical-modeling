@@ -10,6 +10,13 @@ df<-select(df,-c(w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,w11,w12,w13,w14,w15,w16,w17,w18,
 df<-select(df,-c(Holiday,date ) )
 
 
+#matrice de corrélation
+corm<-apply(cor(df),2,rev)
+image(corm)
+
+#dependance de load par rapport à la temp moyenne 
+pairs(cbind(df$LOAD,df$average))
+
 #Dataviz
 #Sur la série entière
 plot.ts(df$LOAD, main = "LOAD au cours du temps", xlab = "Temps", ylab = "Valeur de la consommation")
