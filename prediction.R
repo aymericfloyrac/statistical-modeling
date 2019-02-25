@@ -4,16 +4,45 @@ library(glmnet)
 library(plotmo)
 library(xtable)
 library(mgcv)
+library(Metrics)
+library(ggplot2)
 
 rm(list=ls())
 setwd(dir = "/Users/aymeric/Documents/ENSAE/2A/Semestre 2/Séminaire statistiques" )
 df <-read.csv('modified_data7.csv')
+######################
+#iterative prediction#
+######################
+iterative<-function(object,dataset,forward){
+#object est le prédicteur, ds la base de données entière(train+test),forward est le nombre de pas dans le futur
+  ds<-dataset
+  l<-length(ds$LOAD)
+  ytrue<-ds$LOAD[(l-forward+1):l]
+  ds$LOAD[(l-forward):l]<-rep(0,forward) #on remplit la colonne de LOADs inconnue avec des 0 
+  for (i in seq(l-forward+1,l)){
+    features<-ds[i,]
+    features$prevload<-ds$LOAD[(i-24)]
+    features$maxload<-max(ds$LOAD[(i-24):(i-1)])
+    features$minload<-min(ds$LOAD[(i-24):(i-1)])
+    features$averageload<-mean(ds$LOAD[(i-24*7):(i-1)])
+    ds$LOAD[i]<-predict(object,features)
+  }
+  ypred<-ds$LOAD[(l-forward+1):l]
+  plot(seq(1,forward),ypred,type='l',col='red')
+  lines(seq(1,forward),ytrue,col='green')
+  return(rmse(ytrue,ypred))
+}
 
-########################
+
+
+#####################
 #régression linéaire#
-########################
-fit<-lm(LOAD~hour+month+year+temp+maxload+minload+averageload+laggedtemp+maxtemp+mintemp+averagetemp+prevload+tempdiff+notworking+heurepleine, data=df )
+#####################
+forward<-24
+train<-df[0:-forward,]
+fit<-lm(LOAD~hour+month+year+temp+maxload+minload+averageload+laggedtemp+maxtemp+mintemp+averagetemp+prevload+tempdiff+notworking+heurepleine, data=train )
 summary(fit )
+score<-iterative(object = fit,dataset = df,forward = forward)
 stargazer(fit, title="Resultats")
 
 
@@ -65,14 +94,25 @@ stargazer(model, title="Resultats")
 g <- gam(formula = LOAD~s(hour,k=10)+s(month,k=10)+notworking+heurepleine+year+s(temp,k=10)+s(maxload,k=10)+s(minload,k=10)+s(averageload,k=10)+s(laggedtemp,k=10)+s(maxtemp,k=10)+s(mintemp,k=10)+s(averagetemp,k=10)+s(prevload,k=10)+s(tempdiff,k=10),
          data = df,
          fit = T,
-         family = 'gaussian' )
+         family = 'gaussian',
+         select = T)
 
 summary(g)
+gam.check(g)
 
-g2 <- gam(LOAD~s(maxload,k=1)+s(maxtemp,k=1)+weekend+notworking+heurepleine,data = df)
-summary(g2)
+#train test
+index<-dim(df)[1]-30*24
+train<-df[1:index,]
+test <-df[index:dim(df)[1],]
+g <- gam(formula = LOAD~s(hour,k=10)+s(month,k=10)+notworking+heurepleine+year+s(temp,k=10)+s(maxload,k=10)+s(minload,k=10)+s(averageload,k=10)+s(laggedtemp,k=10)+s(maxtemp,k=10)+s(mintemp,k=10)+s(averagetemp,k=10)+s(prevload,k=10)+s(tempdiff,k=10),
+         data = train,
+         fit = T,
+         family = 'gaussian',
+         select = T)
 
+ypred<-predict.gam(object = g,newdata = test[,3:17],type = 'lpmatrix')
+ytrue<-test[,2]
+plot(ypred,type='l',col="red")
+lines(ytrue,col="green")
 
-g3 <- gam(LOAD~s(laggedtemp,k=1,bs='tp')+s(maxtemp,k=1)+weekend+notworking+heurepleine,data = df)
-summary(g3)
-stargazer(g3, title="Resultats")
+stargazer(g, title="Resultats")
