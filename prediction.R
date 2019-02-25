@@ -11,31 +11,6 @@ rm(list=ls())
 setwd(dir = "/Users/aymeric/Documents/ENSAE/2A/Semestre 2/Séminaire statistiques" )
 df <-read.csv('modified_data7.csv')
 
-###############
-###Série temp##
-###############
-#A préciser
-
-plot.ts(df$LOAD, main = "LOAD au cours du temps", xlab = "Temps", ylab = "Valeur de la consommation")
-
-#Autocorrélogramme et autocorrélogramme partiel
-acf(df$LOAD,lag.max = 15, main="Autocorrélogramme de la série", xlab="Retard")
-pacf(df$LOAD, lag.max = 15, main = "Autocorrélogramme partiel", xlab = "Retard")
-#Forte corrélationa vec le lagged 1 et lagged 2
-
-#Xt - Xt-1 (au pas horaire)
-acf(diff(df$LOAD, differences = 1))
-pacf(diff(df$LOAD, differences = 1))
-
-#Test de Dickey-Fuller : pour la stationnarité de la série temp
-adf.test(df$LOAD, alternative = "stationary", k=0)
-
-#ARIMA (pas du tout le bon modèle)
-arima(df$LOAD, order = c(2,0,0))
-
-#Arime forecats
-test.arima.200 <- arima(df$LOAD, order = c(2,0,0))
-pred <- predict(test.arima.200, n.ahead = 100)
 
 
 ######################
@@ -93,6 +68,36 @@ naive_forecast <- function(data, step) {
 
 naive_forecast(df,"hour")
 naive_forecast(df,"month")
+
+
+###############
+###Série temp##
+###############
+#A préciser
+
+plot.ts(df$LOAD, main = "LOAD au cours du temps", xlab = "Temps", ylab = "Valeur de la consommation")
+
+#Autocorrélogramme et autocorrélogramme partiel
+acf(df$LOAD,lag.max = 15, main="Autocorrélogramme de la série", xlab="Retard")
+pacf(df$LOAD, lag.max = 15, main = "Autocorrélogramme partiel", xlab = "Retard")
+#Forte corrélationa vec le lagged 1 et lagged 2
+
+#Xt - Xt-1 (au pas horaire)
+acf(diff(df$LOAD, differences = 1))
+pacf(diff(df$LOAD, differences = 1))
+
+#Test de Dickey-Fuller : pour la stationnarité de la série temp
+adf.test(df$LOAD, alternative = "stationary", k=0)
+
+#ARIMA (pas du tout le bon modèle)
+arima(df$LOAD, order = c(2,0,0))
+
+#Arime forecats
+test.arima.200 <- arima(df$LOAD, order = c(2,0,0))
+pred <- predict(test.arima.200, n.ahead = 100)
+
+
+
 
 #####################
 #régression linéaire#
