@@ -19,8 +19,24 @@ plot(df$hour,df$LOAD, main = "Consommation en fonction de l'heure", xlab = "Heur
 
 
 #Sur un subset en particulier
+#Janvier 2007
 ds_janv_2007 = df[which(df$year == "2007" & df$month == "1"),]
-plot.ts(ds_janv_2007$LOAD, main = "LOAD au cours du mois de Janvier", xlab = "Temps", ylab = "Valeur de la consommation")
+plot.ts(ds_janv_2007$LOAD, main = "Consommation électique au cours du mois de Janvier 2007", xlab = 'Temps', ylab = "Valeur de la consommation", xaxt = "n")
+axis(1, at=seq(1,744,by = 100), labels = c(as.character(ds_janv_2007[seq(1,744,by = 100),29])))
+
+
+
+#ete
+ds_ete_2007 = df[which((df$month == "6" | df$month == "7"  | df$month == "8"  | df$month == "9") & df$year == "2007"),]
+plot.ts(ds_ete_2007$LOAD, main = "Consommation électique au cours de l'été 2007", xlab = "Temps", ylab = "Valeur de la consommation", xaxt = "n")
+axis(1, at=seq(1,2928,by= 744), labels = c(as.character(ds_ete_2007[seq(1,2928,by = 744),29])))
+
+
+#ete
+ds_hiver_2007 = df[which((df$month == "1"  | df$month == "2"  | df$month == "3") & df$year == "2007"),]
+plot.ts(ds_hiver_2007$LOAD, main = "Consommation électique au cours de l'hiver 2007", xlab = "Temps", ylab = "Valeur de la consommation", xaxt = "n")
+axis(1, at=seq(1,2928,by= 744), labels = c(as.character(ds_hiver_2007[seq(1,2928,by = 744),29])))
+
 
 #autocorrelation 
 Acf(df$LOAD,lag.max=NULL,type='correlation',plot=T,main='autocorrelation')
