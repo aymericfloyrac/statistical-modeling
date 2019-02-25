@@ -18,7 +18,7 @@ iterative<-function(object,dataset,forward){
   ds<-dataset
   l<-length(ds$LOAD)
   ytrue<-ds$LOAD[(l-forward+1):l]
-  ds$LOAD[(l-forward):l]<-rep(0,forward) #on remplit la colonne de LOADs inconnue avec des 0 
+  ds$LOAD[(l-forward+1):l]<-rep(0,forward) #on remplit la colonne de LOADs inconnue avec des 0 
   for (i in seq(l-forward+1,l)){
     features<-ds[i,]
     features$prevload<-ds$LOAD[(i-24)]
@@ -27,10 +27,13 @@ iterative<-function(object,dataset,forward){
     features$averageload<-mean(ds$LOAD[(i-24*7):(i-1)])
     ds$LOAD[i]<-predict(object,features)
   }
+  
   ypred<-ds$LOAD[(l-forward+1):l]
-  plot(seq(1,forward),ypred,type='l',col='red')
-  lines(seq(1,forward),ytrue,col='green')
-  return(rmse(ytrue,ypred))
+  p1 <- ggplot() + geom_line(aes(y = ypred, x = seq(1,forward), colour = 'prediction'))+
+    geom_line(aes(y = ytrue,x=seq(1,forward),colour='truth'))
+  p1
+  result<-list(rmse=rmse(ytrue,ypred),ytrue=ytrue,ypred=ypred)
+  return(result)
 }
 
 
@@ -41,8 +44,10 @@ iterative<-function(object,dataset,forward){
 forward<-24
 train<-df[0:-forward,]
 fit<-lm(LOAD~hour+month+year+temp+maxload+minload+averageload+laggedtemp+maxtemp+mintemp+averagetemp+prevload+tempdiff+notworking+heurepleine, data=train )
-summary(fit )
-score<-iterative(object = fit,dataset = df,forward = forward)
+summary(fit)
+ret<-iterative(object = fit,dataset = df,forward = forward)
+ret$rmse
+
 stargazer(fit, title="Resultats")
 
 
