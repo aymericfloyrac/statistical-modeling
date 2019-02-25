@@ -62,10 +62,12 @@ stargazer(model, title="Resultats")
 
 #GAM 
 #GAM 
-g <- gam(formula = LOAD~s(hour,k=6)+s(month,k=6)+s(average,k=6)+s(maxload,k=6)+s(minload,k=6)+s(averageload,k=6)+s(laggedtemp,k=6)+s(maxtemp,k=6)+s(mintemp,k=6)+s(averagetemp,k=6)+s(prevload,k=6)+s(tempdiff,k=6),
+g <- gam(formula = LOAD~s(hour,k=10)+s(month,k=10)+notworking+heurepleine+year+s(temp,k=10)+s(maxload,k=10)+s(minload,k=10)+s(averageload,k=10)+s(laggedtemp,k=10)+s(maxtemp,k=10)+s(mintemp,k=10)+s(averagetemp,k=10)+s(prevload,k=10)+s(tempdiff,k=10),
          data = df,
          fit = T,
          family = 'gaussian' )
+
+summary(g)
 
 g2 <- gam(LOAD~s(maxload,k=1)+s(maxtemp,k=1)+weekend+notworking+heurepleine,data = df)
 summary(g2)
