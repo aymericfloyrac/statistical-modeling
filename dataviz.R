@@ -24,3 +24,44 @@ plot.ts(ds_janv_2007$LOAD, main = "LOAD au cours du mois de Janvier", xlab = "Te
 
 #autocorrelation 
 Acf(df$LOAD,lag.max=NULL,type='correlation',plot=T,main='autocorrelation')
+
+
+
+
+###########
+t = df  %>%  group_by(month,year) %>% dplyr::summarize(Mean = mean(LOAD, na.rm=TRUE))
+t2 = df  %>%  group_by(hour, month) %>% dplyr::summarize(Mean = mean(LOAD, na.rm=TRUE))
+
+
+
+ggplot(t, aes(month, Mean , group=year, colour=factor(year))) +
+  geom_line() +
+  geom_point() +
+  labs(title ="Consommation moyenne d'électricité par mois selon l'année",x="Mois",y = 'LOAD en moyenne', colour="Année") +
+  scale_x_continuous(breaks=c(2,4,6,8,10), labels=c("Février", "Avril", "Juin","Août","Octobre"))+
+  theme_bw()
+
+
+ggplot(t2, aes(hour, Mean , group=month, colour=factor(month))) +
+  geom_line() +
+  geom_point() +
+  labs(title ="Consommation moyenne d'électricité par heure selon le mois",x="Heure",y = 'LOAD en moyenne', colour="Mois") +
+  theme_bw()
+
+
+# Year plot
+t$label <- as.factor(paste("Mean", t$year, sep = ""))
+t$b <-month.abb[t$month]
+# Superposition des années en radar
+ggplot(data = t, aes(x = month, y = Mean, color = label)) + 
+  geom_line() +
+  geom_point() + 
+  labs(title ="Consommation moyenne d'électricité par heure selon le mois",x="Heure",y = 'LOAD en moyenne', colour="Mois") +
+  coord_polar() +
+  scale_x_continuous(breaks=c(1,2,3,4,5,6,7,8,9,10,11), labels=c("Janvier","Février","Mars", "Avril","Mai", "Juin","Juillet","Août","Septembre","Octobre","Novembre")) +
+  theme(legend.position = "bottom") +
+  theme_bw()
+
+
+
+
