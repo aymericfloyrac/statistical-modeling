@@ -50,3 +50,4 @@ dataset<-select(dataset,-c(X,Date,farniente,weekend,day,
 #elimination des NA et reordonnancement
 dataset<-dataset[!is.na(dataset$averageload),]
 dataset<-dataset[,c(1,9,10,11,12,3,4,5,6,7,8,2,13,14,15,16)]
+write.csv(x = dataset,file = 'modified_data7.csv')
