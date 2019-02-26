@@ -99,7 +99,7 @@ plot_pred_hour <- function(li) {
   true_heure = c(li[[1]]$ytrue)
   for (i in 2:12){
     pred_heure = c(pred_heure,li[[i]]$ypred)
-    true_heure = c(true_heure,li[[i]]$ypred)
+    true_heure = c(true_heure,li[[i]]$ytrue)
   }
   p1 <- ggplot() + geom_line(aes(y = pred_heure, x = seq(1,length(pred_heure)), colour = 'prediction'),alpha=0.5)+
     geom_line(aes(y = true_heure,x=seq(1,length(pred_heure)),colour='truth'),alpha=0.3)+
