@@ -6,6 +6,7 @@ library(xtable)
 library(mgcv)
 library(Metrics)
 library(ggplot2)
+library(lubridate)
 
 rm(list=ls())
 setwd(dir = "/Users/aymeric/Documents/ENSAE/2A/Semestre 2/Séminaire statistiques" )
@@ -41,6 +42,61 @@ iterative<-function(object,dataset,forward,name){
   result<-list(rmse=rmse(ytrue,ypred),ytrue=ytrue,ypred=ypred)
   return(result)
 }
+
+
+########################
+#Prédictions itérative sur l'année#
+########################
+
+nbjours <- function(date) {
+  #donne le nombre de jours dans le mois correspondant à la date donnée
+  m <- format(date, format="%m")
+  
+  while (format(date, format="%m") == m) {
+    date <- date + 1
+  }
+  
+  return(as.integer(format(date - 1, format="%d")))
+}
+
+
+
+forecast_next_month <- function(predicteur,dataseti,year=2011,month_ahead=12) {
+  #Predicteur est le predicteur fitté sur le train set
+  #dataseti est le dataset en entier (y compris 2011)
+  #year donne l'année qu'on va prédire (ici la dernière du dataset)
+  #month_ahead donne le nombre de mois que l'on veut prédire (max 12 et min 1)
+  #renvoie une liste contenant les résultats de prédictions pour chaque mois
+  ans <- vector("list", month_ahead)
+  for (i in 1:month_ahead) {
+    remove_month <- c(seq(1:i))
+    df_cop <-dataseti[!(dataseti$year == year & !(dataseti$month %in% c(seq(1:i)))),]
+    month=df_cop$month[length(df_cop$month)]
+    year=df_cop$year[length(df_cop$year)]
+    d <- ymd(paste(as.character(year),paste(paste("-",as.character(month),sep=""),"-11",sep=""),sep=""))
+    nb_days = nbjours(d)
+    ans[[i]]<-iterative(object=predicteur,df_cop,nb_days*24,month.abb[month])
+  }
+  return(ans)
+}
+
+pred_annuelle=forecast_next_month(g,df,year=2011,month_ahead=12)
+
+
+plot_rmse_month <- function(li) {
+  rmse = c(rep(0,12))
+  for (i in 1:12){
+    rmse[i] = li[[i]]$rmse
+  }
+  p1 <- ggplot() + geom_line(aes(y = rmse, x = seq(1:12)),alpha=0.4)+
+    labs(x="Mois",y = 'RMSE', colour="Variable") +
+    theme_bw()
+  p1
+}
+
+
+plot_rmse_month(pred_annuelle)
+
 
 ########################
 #Prédictions naives à l'horizon horaire ou mensuel#
@@ -166,9 +222,12 @@ summary(g)
 gam.check(g)
 
 #train test
-index<-dim(df)[1]-30*24
-train<-df[1:index,]
-test <-df[index:dim(df)[1],]
+#index<-dim(df)[1]-30*24
+#train<-df[1:index,]
+#test <-df[index:dim(df)[1],]
+
+train<-df[!(df$year == 2011),]
+test <-df[(df$year == 2011),]
 g <- gam(formula = LOAD~s(hour,k=10)+s(month,k=10)+notworking+heurepleine+year+s(temp,k=10)+s(maxload,k=10)+s(minload,k=10)+s(averageload,k=10)+s(laggedtemp,k=10)+s(maxtemp,k=10)+s(mintemp,k=10)+s(averagetemp,k=10)+s(prevload,k=10)+s(tempdiff,k=10),
          data = train,
          fit = T,
