@@ -20,7 +20,8 @@ dataset$mintemp<- -rollmax(-dataset$temp,k = 7*24,fill = NA,align = 'right')
 dataset$averagetemp<-rollmean(dataset$temp,k = 7*24,fill = NA,align = 'right')
 
 #variables de consommation
-dataset<-shift.column(data = dataset,columns = c('LOAD'),newNames = ('prevload'),len = 24,up = F)
+dataset<-shift.column(data = dataset,columns = c('LOAD'),newNames = ('prevload_24'),len = 24,up = F)
+dataset<-shift.column(data = dataset,columns = c('LOAD'),newNames = ('prevload_1'),len = 1,up = F)
 dataset$maxload<-rollmax(dataset$LOAD,k = 24,fill = NA,align = 'right')
 dataset$minload<- -rollmax(-dataset$LOAD,k=24,fill = NA,align = 'right')
 dataset$averageload<-rollmean(dataset$LOAD,k=7*24,fill = NA,align = 'right')
@@ -49,5 +50,5 @@ dataset<-select(dataset,-c(X,Date,farniente,weekend,day,
                            Holiday,date))
 #elimination des NA et reordonnancement
 dataset<-dataset[!is.na(dataset$averageload),]
-dataset<-dataset[,c(1,9,10,11,12,3,4,5,6,7,8,2,13,14,15,16)]
-write.csv(x = dataset,file = 'modified_data7.csv')
+dataset<-dataset[,c(1,9,10,11,12,3,4,5,6,7,8,2,13,14,15,16,17)]
+write.csv(x = dataset,file = 'modified_data8.csv')
