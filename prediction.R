@@ -202,11 +202,12 @@ stargazer(fit, title="Resultats")
 forward<-24
 train<-df[0:-forward,]
 x = as.matrix(select(train,-c(X,LOAD )))
+y = as.matrix(select(train$LOAD))
 
 ##regression ridge
-rcv <- cv.glmnet(x= x,y=df$LOAD,alpha = 0,family="gaussian",nfold=3)
+rcv <- cv.glmnet(x= x,y=y,alpha = 0,family="gaussian",nfold=3)
 plot(rcv)
-ridge <- glmnet(x = x,y = df$LOAD,alpha = 0,family='gaussian',lambda = c(rcv$lambda.min))
+ridge <- glmnet(x = x,y = y,alpha = 0,family='gaussian',lambda = c(rcv$lambda.min))
 plot_glmnet(ridge, label=5,main = paste("Régression Ridge", "meilleur lambda =",rcv$lambda.min),xlab="Valeurs de log(Lambda)", ylab="Valeur des coefficients")
 abline(v = log(rcv$lambda.min),col="red", lty=2)
 Beta_ridge = data.frame(as.data.frame(as.matrix(ridge$beta)))
@@ -217,9 +218,9 @@ score<-iterative(object = ridge,dataset = df,forward = forward,name = "ridge")
 
 
 ##LASSO
-rcv <- cv.glmnet(x= x,y=df$LOAD,alpha = 1,family="gaussian",nfold=3) #alpha=1 donne la pénalisation lasso
+rcv <- cv.glmnet(x= x,y=y,alpha = 1,family="gaussian",nfold=3) #alpha=1 donne la pénalisation lasso
 plot(rcv)
-lasso <- glmnet(x = x,y = df$LOAD,alpha = 1,family='gaussian',lambda = c(rcv$lambda.min))
+lasso <- glmnet(x = x,y = y,alpha = 1,family='gaussian',lambda = c(rcv$lambda.min))
 plot_glmnet(lasso, label = 5,  main = paste("Régression Lasso", "meilleur lambda =",rcv$lambda.min),xlab="Valeurs de log(Lambda)", ylab="Valeur des coefficients")
 abline(v = log(rcv$lambda.min),col="red", lty=2)
 Beta_lasso = data.frame(as.data.frame(as.matrix(best_lasso$beta)))
