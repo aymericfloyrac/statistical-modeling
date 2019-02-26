@@ -30,18 +30,31 @@ iterative<-function(object,dataset,forward,name){
     features$maxload<-max(ds$LOAD[(i-24):(i-1)])
     features$minload<-min(ds$LOAD[(i-24):(i-1)])
     features$averageload<-mean(ds$LOAD[(i-24*7):(i-1)])
-    ds$LOAD[i]<-predict(object,features)
+    if (name == "reglin"){
+      ds$LOAD[i]<-predict(object,features)
+    }
+    if (name == "ridge"){
+      features = select(features, -c(X,LOAD))
+      features = as.matrix(features)
+      ds$LOAD[i]<-predict(object,features)
+    }
+    if (name == "lasso"){
+      features = select(features, -c(X,LOAD))
+      features = as.matrix(features)
+      ds$LOAD[i]<-predict(object,features)
+    }
   }
   ypred<-ds$LOAD[(l-forward+1):l]
-  p1 <- ggplot() + geom_line(aes(y = ypred, x = seq(1,forward), colour = 'prediction'),alpha=0.4)+
-    geom_line(aes(y = ytrue,x=seq(1,forward),colour='truth'),alpha=0.4)+
+  p1 <- ggplot() + geom_line(aes(y = ypred, x = seq(1,forward), colour = 'prédiction'),alpha=0.4)+
+    geom_line(aes(y = ytrue,x=seq(1,forward),colour='réelle'),alpha=0.4)+
     labs(x="Horizon temporel",y = 'Niveau consommation électricité', colour="Variable") +
     theme_bw()
   p1
-  ggsave(paste0("pred_",name,".png"))
+  ggsave(paste0("pred_",name,".png"),plot = p1)
   result<-list(rmse=rmse(ytrue,ypred),ytrue=ytrue,ypred=ypred)
   return(result)
 }
+
 
 
 ########################
@@ -186,7 +199,9 @@ stargazer(fit, title="Resultats")
 #régressions pénalisées#
 ########################
 
-x = as.matrix(select(df,-c(X,LOAD )))
+forward<-24
+train<-df[0:-forward,]
+x = as.matrix(select(train,-c(X,LOAD )))
 
 ##regression ridge
 rcv <- cv.glmnet(x= x,y=df$LOAD,alpha = 0,family="gaussian",nfold=3)
