@@ -94,8 +94,23 @@ plot_rmse_month <- function(li) {
   p1
 }
 
+plot_pred_hour <- function(li) {
+  pred_heure = c(li[[1]]$ypred)
+  true_heure = c(li[[1]]$ytrue)
+  for (i in 2:12){
+    pred_heure = c(pred_heure,li[[i]]$ypred)
+    true_heure = c(true_heure,li[[i]]$ypred)
+  }
+  p1 <- ggplot() + geom_line(aes(y = pred_heure, x = seq(1,length(pred_heure)), colour = 'prediction'),alpha=0.5)+
+    geom_line(aes(y = true_heure,x=seq(1,length(pred_heure)),colour='truth'),alpha=0.3)+
+    labs(title = "Prédictions au pas horaire sur toute l'année",x="Heure",y = 'Niveau consommation électricité', colour="Variable") +
+    theme_bw()
+  p1
+}
 
 plot_rmse_month(pred_annuelle)
+plot_pred_hour(pred_annuelle)
+
 
 
 ########################
