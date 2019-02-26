@@ -199,10 +199,11 @@ stargazer(fit, title="Resultats")
 #régressions pénalisées#
 ########################
 
+#On définit les matrices pour les deux reg pénalisées
 forward<-24
 train<-df[0:-forward,]
 x = as.matrix(select(train,-c(X,LOAD )))
-y = as.matrix(select(train$LOAD))
+y = as.matrix(train$LOAD)
 
 ##regression ridge
 rcv <- cv.glmnet(x= x,y=y,alpha = 0,family="gaussian",nfold=3)
