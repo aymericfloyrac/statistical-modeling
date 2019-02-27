@@ -157,14 +157,37 @@ naive_forecast(df,"month")
 ###############
 ###Série temp##
 ###############
-#A préciser
 
 plot.ts(df$LOAD, main = "LOAD au cours du temps", xlab = "Temps", ylab = "Valeur de la consommation")
+#On a l'impression que c'est stationnaire
+
+#Si on utilise le package forecast pour donner des paramètres p d q du ARIMA
+auto.arima(df$LOAD)
+#On obtient un modèle ARIMA(4,1,1)
+
+#Arime forecats
+#si on test sur les 24 dernières heures
+forward<-24
+l <- length(df$LOAD)
+train<-df[0:-forward,]
+ytrue<-df[(l-forward+1):l,]
+ytrue <- ytrue$LOAD
+
+arima.411 <- arima(train$LOAD, order = c(4,1,1))
+ypred <- predict(arima.411, n.ahead = forward)
+ts.plot(ytrue,ypred$pred, col =c("blue","red"), main = "Prédictions de l ARIMA")
+        
+
+
+
+#Si on le tune nous même
 
 #Autocorrélogramme et autocorrélogramme partiel
-acf(df$LOAD,lag.max = 15, main="Autocorrélogramme de la série", xlab="Retard")
-pacf(df$LOAD, lag.max = 15, main = "Autocorrélogramme partiel", xlab = "Retard")
-#Forte corrélationa vec le lagged 1 et lagged 2
+acf(df$LOAD,lag.max = 50, main="Autocorrélogramme de la série", xlab="Retard")
+#ce n'est clairement pas stationnaire car la décroissance vers 0 est très lente donc d = 1
+# le dernier a être significatif est pour q = 15
+pacf(df$LOAD, lag.max = 50, main = "Autocorrélogramme partiel", xlab = "Retard")
+# le dernier a être significatif est pour p = 28
 
 #Xt - Xt-1 (au pas horaire)
 acf(diff(df$LOAD, differences = 1))
@@ -173,14 +196,11 @@ pacf(diff(df$LOAD, differences = 1))
 #Test de Dickey-Fuller : pour la stationnarité de la série temp
 adf.test(df$LOAD, alternative = "stationary", k=0)
 
-#ARIMA (pas du tout le bon modèle)
-arima(df$LOAD, order = c(2,0,0))
-
 #Arime forecats
-test.arima.200 <- arima(df$LOAD, order = c(2,0,0))
-pred <- predict(test.arima.200, n.ahead = 100)
-
-
+#Vu que ça ne donne rien avec pet q trop grand, on fait plus faible
+arima.28115 <- arima(train$LOAD, order = c(10,1,10))
+ypred <- predict(arima.28115, n.ahead = forward)
+ts.plot(ytrue,ypred$pred, col =c("blue","red"), main = "Prédictions de l ARIMA")
 
 
 #####################
