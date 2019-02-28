@@ -125,6 +125,23 @@ plot_rmse_month(pred_annuelle)
 plot_pred_hour(pred_annuelle)
 
 
+get_errors <- function(li){
+  me=c(rep(0,12))
+  mp=c(rep(0,12))
+  for (i in 1:12){
+    me[i]=mae(li[[i]]$ytrue,li[[i]]$ypred)
+    mp[i]=mape(li[[i]]$ytrue,li[[i]]$ypred)
+  }
+  mp=round(mp*100,2)
+  me=round(me,2)
+  res=data.frame(month=c("Jan","Fev","Mar","Avr","Mai","Juin","Jui","Aout","Sep","Oct","Nov","Dec"),mae=me,mape=mp)
+  return(res)
+}
+
+error_table<-get_errors(pred_annuelle)
+
+#pour le code latex
+xtable(error_table)
 
 ########################
 #Prédictions naives à l'horizon horaire ou mensuel#
