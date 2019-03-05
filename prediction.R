@@ -186,19 +186,66 @@ naive_forecast <- function(data, step,year=2011) {
 naive_forecast(df,"hour")
 naive_forecast(df,"month")
 
-
 ###############
 ###Série temp##
 ###############
-
+#On vire 2005 aussi car trop de données manquantes dans des jours diff => flingue la saisonnalité
+train<-df[!((df$year == 2005) | (df$year == 2011)),]
+test <-df[(df$year == 2011),]
 #A voir avec le chargé de TD pour le tuning
+#On trouve la périodicité la plus plosible avec la transformée de fourier
+
+# compute the Fourier Transform
+p = periodogram(train$LOAD)
+dd = data.frame(freq=p$freq, spec=p$spec)
+order = dd[order(-dd$spec),]
+top2 = head(order, 2)
+# convert frequency to time periods
+time = 1/top2$f
+time
+#Meilleure saisonalité à 24h (deuxième composante)
+
 
 plot.ts(df$LOAD, main = "LOAD au cours du temps", xlab = "Temps", ylab = "Valeur de la consommation")
-#On a l'impression que c'est stationnaire
+#décomposition
+trend_LOAD = ma(train$LOAD, order = 24, centre = T)
+plot(as.ts(df$LOAD))
+lines(trend_LOAD)
+plot(as.ts(trend_LOAD))
+
+#detrend
+detrend_load = train$LOAD - trend_LOAD
+plot(as.ts(detrend_load))
+
+#Average the seasonality
+
+m_LOAD = t(matrix(data = detrend_load, nrow = 24))
+seasonal_LOAD = colMeans(m_LOAD, na.rm = T)
+plot(as.ts(rep(seasonal_LOAD,1826)))
+
+#Find random
+random_LOAD = train$LOAD - trend_LOAD - rep(seasonal_LOAD,1826)
+plot(as.ts(random_LOAD))
+
+
+#Fonction STL
+ts_load = ts(df$LOAD, frequency = 24)
+stl_load = stl(ts_load, "periodic")
+seasonal_stl_load   <- stl_load$time.series[,1]
+trend_stl_load    <- stl_load$time.series[,2]
+random_stl_load  <- stl_load$time.series[,3]
+
+plot(ts_load)
+plot(as.ts(seasonal_stl_load))
+plot(trend_stl_load)
+plot(random_stl_load)
 
 #Si on utilise le package forecast pour donner des paramètres p d q du ARIMA
-auto.arima(df$LOAD)
-#On obtient un modèle ARIMA(4,1,1)
+auto.arima(random_LOAD)
+#On obtient un modèle ARIMA(5,0,0)
+auto.arima(random_stl_load)
+#On obtient un modèle ARIMA()
+
 
 #Arime forecats
 #si on test sur les 24 dernières heures
@@ -208,8 +255,8 @@ train<-df[0:-forward,]
 ytrue<-df[(l-forward+1):l,]
 ytrue <- ytrue$LOAD
 
-arima.411 <- arima(train$LOAD, order = c(4,1,1))
-ypred <- predict(arima.411, n.ahead = forward)
+arima.500 <- arima(train$LOAD, order = c(5,0,0))
+ypred <- predict(arima.500, n.ahead = forward)
 ts.plot(ytrue,ypred$pred, col =c("blue","red"), main = "Prédictions de l ARIMA")
 
 #Sur 2011
@@ -217,8 +264,8 @@ train<-df[!(df$year == 2011),]
 test <-df[(df$year == 2011),]
 ytrue <- test$LOAD
 n = length(test$LOAD)
-arima.411 <- arima(train$LOAD, order = c(4,1,1))
-ypred <- predict(arima.411, n.ahead = n)
+arima.500 <- arima(train$LOAD, order = c(5,0,0))
+ypred <- predict(arima.500, n.ahead = n)
 p1 <- ggplot() + geom_line(aes(y = ypred$pred, x = seq(1,n), colour = 'prediction'),alpha=0.5)+
   geom_line(aes(y = ytrue,x=seq(1, n),colour='truth'),alpha=0.3)+
   labs(title = "Prédictions au pas horaire sur l'année 2011",x="Heure",y = 'Niveau consommation électricité', colour="Variable") +
@@ -226,7 +273,6 @@ p1 <- ggplot() + geom_line(aes(y = ypred$pred, x = seq(1,n), colour = 'predictio
   theme_bw()+
   theme(axis.text.x=element_text(angle=45,hjust=1))
 p1
-
 
 
 #Si on le tune nous même => a demander au chargé de TD
