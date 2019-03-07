@@ -368,6 +368,8 @@ plot_pred_hour(pred_annuelle_lasso,'lasso')
 ##GAM#####
 ##########
 
+#option cycle : s(..., bs = "cc")
+
 #GLM, à voir si ça sert à quelque chose 
 model<-glm(formula = LOAD~hour+month+year+average+maxload+minload+averageload+laggedtemp+maxtemp+mintemp+averagetemp+prevload+tempdiff+weekend+notworking+heurepleine, 
            data=df,
