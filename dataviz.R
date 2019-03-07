@@ -3,7 +3,18 @@ rm(list=ls())
 library(dplyr)
 library(forecast)
 library(lattice)
+library(corrplot)
 df <- read.csv('modified_data7.csv',header = T) #on vire la première semaine
+
+#On charge la base entière inchangée puis on vire les na.
+dataset <- read.csv('data_sujet2.csv',header = T)
+dataset<-dataset[!rowSums(is.na(dataset[c("LOAD")])), ]
+#On visualise ici les correlations de temperatures entres les différentes stations
+mat<-cor(dataset[,c(colnames(dataset)[2:26])])
+corrplot(mat, type = "upper", order = "hclust", tl.col = "black", tl.srt = 45)
+mean(mat) #correlation moyenne
+min(mat) #correlation minimum
+
 
 #matrice de corrélation
 corm<-apply(cor(df),2,rev)
