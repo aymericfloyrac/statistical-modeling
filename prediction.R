@@ -12,6 +12,8 @@ rm(list=ls())
 setwd(dir = "/Users/aymeric/Documents/ENSAE/2A/Semestre 2/Séminaire statistiques" )
 df <-read.csv('modified_data7.csv')
 
+df_naif <- read.csv('data_sujet2.csv',header = T) #Dataset inchangé qui servira pour les prédictions naïves.
+df_naif<-df_naif[!rowSums(is.na(df_naif[c("LOAD")])), ]
 
 ######################
 #iterative prediction#
@@ -183,8 +185,8 @@ naive_forecast <- function(data, step,year=2011) {
 }
 
 
-naive_forecast(df,"hour")
-naive_forecast(df,"month")
+naive_forecast(df_naif,"hour")
+naive_forecast(df_naif,"month")
 
 ###############
 ###Série temp##
