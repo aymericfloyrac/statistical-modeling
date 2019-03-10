@@ -162,7 +162,7 @@ naive_forecast <- function(data, step,year=2011) {
     pf<-nf[floor_date(ymd(nf$date),'month')!=ymd("2011-12-01"),]
     me=c(rep(0,12))
     mp=c(rep(0,12))
-    tf<-cbind(tf,pf$LOAD)
+    tpf<-cbind(tf,pf$LOAD)
     for (i in 1:12) {
       res=data.frame(predicted=tpf[(year(ymd(tpf$date))==year & month(ymd(tpf$date))==i),]$`pf$LOAD`,true=tpf[(year(ymd(tpf$date))==year & month(ymd(tpf$date))==i),]$LOAD)
       me[i]=round(mae(res$predicted,res$true),2)
