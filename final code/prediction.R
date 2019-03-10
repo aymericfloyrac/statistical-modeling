@@ -27,10 +27,10 @@ naive_forecast(df,"month")
 train<-df[!(df$year == 2005) | (df$year == 2011),]
 test <-df[(df$year == 2011),]
 
-#Package ZOO
-xm <- zoo(train$LOAD)
+TS = ts(train$LOAD)
+plot(TS)
 #On enlevait la composante saisonnière on différentie
-desaison <- xm-stats::lag(xm,-(24))
+desaison <- diff(TS,24)
 
 plot(desaison)
 #Autocorrélogramme et autocorrélogramme partiel
@@ -40,21 +40,14 @@ pacf(desaison, lag.max = 500, main = "Autocorrélogramme partiel", xlab = "Retar
 # le dernier a être significatif est pour p = 490
 
 #Arima forecast
-#Vu que ça ne donne rien avec pet q trop grand, on fait plus faible
-xarima <- arima(desaison, order = c(490,24,410))
+xarima <- arima(TS, order = c(4,1,2))
 
-n = length(test$LOAD)
-ytrue <- test$LOAD
-ypred <- predict(xarima, n.ahead = n)
-
-p1 <- ggplot() + geom_line(aes(y = ypred$pred, x = seq(1,n), colour = 'prediction'),alpha=0.5)+
-  geom_line(aes(y = ytrue,x=seq(1, n),colour='truth'),alpha=0.3)+
-  labs(title = "Prédictions au pas horaire sur l'année 2011",x="Heure",y = 'Niveau consommation électricité', colour="Variable") +
-  scale_x_continuous(breaks=c(1,745,1417,2161,2881,3625,4345,5089,5833,6553,7297,8071), labels=c("Janvier","Février", "Mars", "Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"))+
-  theme_bw()+
-  theme(axis.text.x=element_text(angle=45,hjust=1))
-p1
-
+#sur 2011
+pred_annuelle_arima=forecast_next_month(xarima,df,year=2011,month_ahead=12,name = "arima")
+error_table_arima <-get_errors(pred_annuelle_arima)
+#pour le code latex
+xtable(error_table_arima)
+plot_pred_hour(pred_annuelle_arima,'arima')
 
 
 ############## REGRESSION LINEAIRE #####################
