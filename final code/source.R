@@ -25,13 +25,14 @@ naive_forecast <- function(data, step,year=2011) {
   #dÃ©taillÃ© pour chaque mois de l'annÃ©e "year"
   #pour step = hour, les predicitons naive sont rÃ©alisÃ©es au pas horaire et la fonction donne 
   #la mae et la mape moyenne sur tout le dataset.
+  data<-data[!rowSums(is.na(data[c("LOAD")])), ]
   if (step=="month") {
     nf<-data[c("LOAD","date")]
     tf<-nf[floor_date(ymd(nf$date),'month')!=ymd("2005-01-01"),]
     pf<-nf[floor_date(ymd(nf$date),'month')!=ymd("2011-12-01"),]
     me=c(rep(0,12))
     mp=c(rep(0,12))
-    tf<-cbind(tf,pf$LOAD)
+    tpf<-cbind(tf,pf$LOAD)
     for (i in 1:12) {
       res=data.frame(predicted=tpf[(year(ymd(tpf$date))==year & month(ymd(tpf$date))==i),]$`pf$LOAD`,true=tpf[(year(ymd(tpf$date))==year & month(ymd(tpf$date))==i),]$LOAD)
       me[i]=round(mae(res$predicted,res$true),2)
@@ -47,16 +48,16 @@ naive_forecast <- function(data, step,year=2011) {
     res=data.frame(true=pf$LOAD,predicted=tf$LOAD)
     mae=mean(abs(res$true-res$predicted))
     mape=mean(abs(res$true-res$predicted)/res$true)
-    return(list(mae,mape))
+    #return(list(mae,mape))
+    return(res)
   }
 }
 
 ############## PREDICTION ITERATIVE #####################
 
 iterative<-function(object,dataset,forward,name,title=''){
-  #object est le prÃ©dicteur, dataset la base de donnÃ©es entiÃ¨re(train+test),
-  #forward est le nombre de pas dans le futur, 
-  #name le nom du modele, et title est le titre pour le graphique exportÃ©
+  #object est le prÃ©dicteur, ds la base de donnÃ©es entiÃ¨re(train+test),forward est le nombre de pas dans le futur, 
+  #name le nom pour le graphique exportÃ©
   if (title==''){title<-name}
   ds<-dataset
   l<-length(ds$LOAD)
@@ -82,6 +83,10 @@ iterative<-function(object,dataset,forward,name,title=''){
       features = as.matrix(features)
       ds$LOAD[i]<-predict(object,features)
     }
+    if (name == "arima"){
+      yp = predict(object,n.ahead = 1)
+      ds$LOAD[i]<- yp$pred
+    }
   }
   ypred<-ds$LOAD[(l-forward+1):l]
   p1 <- ggplot() + geom_line(aes(y = ypred, x = seq(1,forward), colour = 'prédiction'),alpha=0.4)+
@@ -89,10 +94,11 @@ iterative<-function(object,dataset,forward,name,title=''){
     labs(x="Horizon temporel",y = 'Niveau consommation électricité', colour="Variable") +
     theme_bw()
   p1
-  ggsave(paste0("pred_",title,".png"),plot = p1)
+  #ggsave(paste0("pred_",title,".png"),plot = p1)
   result<-list(mape=mape(ytrue,ypred),ytrue=ytrue,ypred=ypred)
   return(result)
 }
+
 
 
 
@@ -144,7 +150,7 @@ plot_pred_hour <- function(li,name) {
     theme_bw()+
     theme(axis.text.x=element_text(angle=45,hjust=1))
   p1
-  ggsave(paste0('plot_',name,'_heure.png'),p1)
+  #ggsave(paste0('plot_',name,'_heure.png'),p1)
 }
 
 ############## EVALUATION DE L'ERREUR #####################
