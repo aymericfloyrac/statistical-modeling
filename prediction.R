@@ -184,16 +184,15 @@ naive_forecast <- function(data, step,year=2011) {
     res=data.frame(true=pf$LOAD,predicted=tf$LOAD)
     mae=mean(abs(res$true-res$predicted))
     mape=mean(abs(res$true-res$predicted)/res$true)
-    return(list(mae,mape))
+    #return(list(mae,mape))
+    return(res)
   }
 }
 
-
-naive_forecast(df_naif,"hour")
-naive_forecast(df_naif,"month")
+df_naif <- read.csv('data_sujet2.csv',header = T) #Dataset inchangé qui servira pour les prédictions naïves.
+df_naif<-df_naif[!rowSums(is.na(df_naif[c("LOAD")])), ]
 
 res =naive_forecast(df_naif,"hour")
-
 res_2011 = res[(52584:61343),]
 
 p1 <- ggplot() + geom_line(aes(y = res_2011$predicted, x = seq(1,n), colour = 'prediction'),alpha=0.5)+
