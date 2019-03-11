@@ -110,7 +110,7 @@ xtable(Beta_lasso)
 
 
 #sur 2011
-pred_annuelle_lasso=forecast_next_month(lasso,df,year=2011,month_ahead=12,name = "ridge")
+pred_annuelle_lasso=forecast_next_month(best_lasso,df,year=2011,month_ahead=12,name = "ridge")
 error_table_lasso <-get_errors(pred_annuelle_lasso)
 error_table_lasso
 #pour le code latex
