@@ -55,6 +55,7 @@ naive_forecast <- function(data, step,year=2011) {
 
 ############## PREDICTION ITERATIVE #####################
 
+
 iterative<-function(object,dataset,forward,name,title=''){
   #object est le prÃ©dicteur, ds la base de donnÃ©es entiÃ¨re(train+test),forward est le nombre de pas dans le futur, 
   #name le nom pour le graphique exportÃ©
@@ -63,10 +64,14 @@ iterative<-function(object,dataset,forward,name,title=''){
   l<-length(ds$LOAD)
   ytrue<-ds$LOAD[(l-forward+1):l]
   ds$LOAD[(l-forward+1):l]<-rep(0,forward) #on remplit la colonne de LOADs inconnue avec des 0 
+  TS <- ts(ds$LOAD[0:(l-forward)])
+  mod <- arima(TS, order = c(4,1,2))
+  yp <-rep(0,l-forward)
+  p = predict(mod,n.ahead = forward+1)
+  ypred = c(yp,p$pred)
   for (i in seq(l-forward+1,l)){
     features<-ds[i,]
-    features$prevload_24<-ds$LOAD[(i-24)]
-    features$prevload_1<-ds$LOAD[(i-1)]
+    features$prevload<-ds$LOAD[(i-24)]
     features$maxload<-max(ds$LOAD[(i-24):(i-1)])
     features$minload<-min(ds$LOAD[(i-24):(i-1)])
     features$averageload<-mean(ds$LOAD[(i-24*7):(i-1)])
@@ -83,9 +88,8 @@ iterative<-function(object,dataset,forward,name,title=''){
       features = as.matrix(features)
       ds$LOAD[i]<-predict(object,features)
     }
-    if (name == "arima"){
-      yp = predict(object,n.ahead = 1)
-      ds$LOAD[i]<- yp$pred
+    if (name == "arima"){  
+      ds$LOAD[i]<- ypred[i]
     }
   }
   ypred<-ds$LOAD[(l-forward+1):l]
@@ -120,7 +124,6 @@ forecast_next_month <- function(predicteur,dataseti,year=2011,month_ahead=12, na
   }
   return(ans)
 }
-
 
 ############## VISUALISATION DES PREDICTIONS #####################
 

@@ -24,8 +24,7 @@ dataset$mintemp<- -rollmax(-dataset$temp,k = 7*24,fill = NA,align = 'right')
 dataset$averagetemp<-rollmean(dataset$temp,k = 7*24,fill = NA,align = 'right')
 
 #variables de consommation
-dataset<-shift.column(data = dataset,columns = c('LOAD'),newNames = ('prevload_24'),len = 24,up = F)
-dataset<-shift.column(data = dataset,columns = c('LOAD'),newNames = ('prevload_1'),len = 1,up = F)
+dataset<-shift.column(data = dataset,columns = c('LOAD'),newNames = ('prevload'),len = 24,up = F)
 dataset$maxload<-rollmax(dataset$LOAD,k = 24,fill = NA,align = 'right')
 dataset$minload<- -rollmax(-dataset$LOAD,k=24,fill = NA,align = 'right')
 dataset$averageload<-rollmean(dataset$LOAD,k=7*24,fill = NA,align = 'right')

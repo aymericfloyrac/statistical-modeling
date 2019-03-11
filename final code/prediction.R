@@ -23,24 +23,19 @@ naive_forecast(initial_df,"month")
 
 ############## MODELISATION - SERIES TEMPORELLES #####################
 
-
-#On vire 2005 aussi car trop de données manquantes dans des jours diff => flingue la saisonnalité
-train<-df[!(df$year == 2005) | (df$year == 2011),]
+train<-df[!(df$year == 2005) | (df$year == 2011),] #2005 compte trop de NA et affecte la saisonnalité
 test <-df[(df$year == 2011),]
 
 TS = ts(train$LOAD)
 plot(TS)
-#On enleve la composante saisonnière on différentie
 desaison <- diff(TS,24)
-
 plot(desaison)
-#Autocorrélogramme et autocorrélogramme partiel
-acf(desaison,lag.max = 500, main="Autocorrélogramme de la série", xlab="Retard")
-# le dernier a être significatif est pour q = 410
-pacf(desaison, lag.max = 500, main = "Autocorrélogramme partiel", xlab = "Retard")
-# le dernier a être significatif est pour p = 490
 
-#Arima forecast
+#Autocorrélogramme et autocorrélogramme partiel
+acf(desaison,lag.max = 200, main="Autocorrélogramme de la série", xlab="Retard")
+pacf(desaison, lag.max = 500, main = "Autocorrélogramme partiel", xlab = "Retard")
+
+#Arime forecats
 xarima <- arima(TS, order = c(4,1,2))
 
 #sur 2011
@@ -71,7 +66,7 @@ plot_pred_hour(pred_annuelle_reglin,'reglin')
 
 ############## REGRESSIONS PENALISEES #####################
 
-#On définit les matrices pour les deux reg pénalisées
+#On définit les matrices pour les deux régressions pénalisées
 train<-df[!(df$year == 2011),]
 test <-df[(df$year == 2011),]
 x = as.matrix(select(train,-c(X,LOAD )))
@@ -83,11 +78,11 @@ rcv <- cv.glmnet(x= x,y=y,alpha = 0,family="gaussian",nfold=5)
 plot(rcv)
 best<-rcv$lambda.min
 
-ridge <- glmnet(x = x,y = y,alpha = 0,family='gaussian')
+ridge <- glmnet(x = x,y = y,alpha = 0,family='gaussian',intercept = T)
 plot_glmnet(ridge, label=5,main = paste("Régression Ridge", "meilleur lambda =",best),xlab="Valeurs de log(Lambda)", ylab="Valeur des coefficients")
 abline(v = log(best),col="red", lty=2)
 
-best_ridge<-glmnet(x=x,y=y,alpha=0,family='gaussian',lambda = best)
+best_ridge<-glmnet(x=x,y=y,alpha=0,family='gaussian',lambda = c(best))
 Beta_ridge = data.frame(as.data.frame(as.matrix(best_ridge$beta)))
 xtable(Beta_ridge)
 
@@ -95,17 +90,21 @@ xtable(Beta_ridge)
 #sur 2011
 pred_annuelle_ridge=forecast_next_month(best_ridge,df,year=2011,month_ahead=12,name = "ridge")
 error_table_ridge<-get_errors(pred_annuelle_ridge)
+error_table_ridge
 #pour le code latex
 xtable(error_table_ridge)
 plot_pred_hour(pred_annuelle_ridge,'ridge')
 
 ##régression LASSO##
 
-rcv <- cv.glmnet(x= x,y=y,alpha = 1,family="gaussian",nfold=3) #alpha=1 donne la pénalisation lasso
+rcv <- cv.glmnet(x= x,y=y,alpha = 1,family="gaussian",nfold=5) #alpha=1 donne la pénalisation lasso
 plot(rcv)
-lasso <- glmnet(x = x,y = y,alpha = 1,family='gaussian',lambda = c(rcv$lambda.min))
+
+lasso<-glmnet(x = x,y = y,alpha = 1,family = 'gaussian')
 plot_glmnet(lasso, label = 5,  main = paste("Régression Lasso", "meilleur lambda =",rcv$lambda.min),xlab="Valeurs de log(Lambda)", ylab="Valeur des coefficients")
 abline(v = log(rcv$lambda.min),col="red", lty=2)
+
+best_lasso <- glmnet(x = x,y = y,alpha = 1,family='gaussian',lambda = c(rcv$lambda.min))
 Beta_lasso = data.frame(as.data.frame(as.matrix(best_lasso$beta)))
 xtable(Beta_lasso)
 
@@ -113,6 +112,7 @@ xtable(Beta_lasso)
 #sur 2011
 pred_annuelle_lasso=forecast_next_month(lasso,df,year=2011,month_ahead=12,name = "ridge")
 error_table_lasso <-get_errors(pred_annuelle_lasso)
+error_table_lasso
 #pour le code latex
 xtable(error_table_lasso)
 plot_pred_hour(pred_annuelle_lasso,'lasso')
