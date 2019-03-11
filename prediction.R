@@ -19,7 +19,6 @@ df_naif<-df_naif[!rowSums(is.na(df_naif[c("LOAD")])), ]
 #iterative prediction#
 ######################
 
-
 iterative<-function(object,dataset,forward,name,title=''){
   #object est le prÃ©dicteur, ds la base de donnÃ©es entiÃ¨re(train+test),forward est le nombre de pas dans le futur, 
   #name le nom pour le graphique exportÃ©
