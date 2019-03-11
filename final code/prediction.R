@@ -56,7 +56,7 @@ plot_pred_hour(pred_annuelle_arima,'arima')
 
 train<-df[!(df$year == 2011),]
 test <-df[(df$year == 2011),]
-fit<-lm(LOAD~hour+month+year+temp+maxload+minload+averageload+laggedtemp+maxtemp+mintemp+averagetemp+prevload+tempdiff+notworking+heurepleine, data=train )
+fit<-lm(LOAD~., data=train )
 summary(fit)
 
 #sur 2011
@@ -81,16 +81,19 @@ y = as.matrix(train$LOAD)
 
 rcv <- cv.glmnet(x= x,y=y,alpha = 0,family="gaussian",nfold=5)
 plot(rcv)
-ridge <- glmnet(x = x,y = y,alpha = 0,family='gaussian',lambda = c(rcv$lambda.min))
-summary(ridge)
-plot_glmnet(ridge, label=5,main = paste("Régression Ridge", "meilleur lambda =",rcv$lambda.min),xlab="Valeurs de log(Lambda)", ylab="Valeur des coefficients")
-abline(v = log(rcv$lambda.min),col="red", lty=2)
-Beta_ridge = data.frame(as.data.frame(as.matrix(ridge$beta)))
+best<-rcv$lambda.min
+
+ridge <- glmnet(x = x,y = y,alpha = 0,family='gaussian')
+plot_glmnet(ridge, label=5,main = paste("Régression Ridge", "meilleur lambda =",best),xlab="Valeurs de log(Lambda)", ylab="Valeur des coefficients")
+abline(v = log(best),col="red", lty=2)
+
+best_ridge<-glmnet(x=x,y=y,alpha=0,family='gaussian',lambda = best)
+Beta_ridge = data.frame(as.data.frame(as.matrix(best_ridge$beta)))
 xtable(Beta_ridge)
 
 
 #sur 2011
-pred_annuelle_ridge=forecast_next_month(ridge,df,year=2011,month_ahead=12,name = "ridge")
+pred_annuelle_ridge=forecast_next_month(best_ridge,df,year=2011,month_ahead=12,name = "ridge")
 error_table_ridge<-get_errors(pred_annuelle_ridge)
 #pour le code latex
 xtable(error_table_ridge)
