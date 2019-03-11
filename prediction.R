@@ -26,11 +26,6 @@ iterative<-function(object,dataset,forward,name,title=''){
   ds<-dataset
   l<-length(ds$LOAD)
   ytrue<-ds$LOAD[(l-forward+1):l]
-  TS <- ts(ds$LOAD[0:(l-forward)])
-  mod <- arima(TS, order = c(4,1,2))
-  yp <-rep(0,l-forward)
-  p = predict(mod,n.ahead = forward+1)
-  ypred = c(yp,p$pred)
   ds$LOAD[(l-forward+1):l]<-rep(0,forward) #on remplit la colonne de LOADs inconnue avec des 0 
   for (i in seq(l-forward+1,l)){
     features<-ds[i,]
@@ -52,7 +47,12 @@ iterative<-function(object,dataset,forward,name,title=''){
       features = as.matrix(features)
       ds$LOAD[i]<-predict(object,features)
     }
-    if (name == "arima"){
+    if (name == "arima"){  
+      TS <- ts(ds$LOAD[0:(l-forward)])
+      mod <- arima(TS, order = c(4,1,2))
+      yp <-rep(0,l-forward)
+      p = predict(mod,n.ahead = forward+1)
+      ypred = c(yp,p$pred)
       ds$LOAD[i]<- ypred[i]
     }
   }
