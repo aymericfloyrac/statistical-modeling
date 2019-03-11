@@ -27,6 +27,11 @@ iterative<-function(object,dataset,forward,name,title=''){
   ds<-dataset
   l<-length(ds$LOAD)
   ytrue<-ds$LOAD[(l-forward+1):l]
+  TS <- ts(ds$LOAD[0:(l-forward)])
+  mod <- arima(TS, order = c(4,1,2))
+  yp <-rep(0,l-forward)
+  p = predict(mod,n.ahead = forward+1)
+  ypred = c(yp,p$pred)
   ds$LOAD[(l-forward+1):l]<-rep(0,forward) #on remplit la colonne de LOADs inconnue avec des 0 
   for (i in seq(l-forward+1,l)){
     features<-ds[i,]
@@ -49,8 +54,7 @@ iterative<-function(object,dataset,forward,name,title=''){
       ds$LOAD[i]<-predict(object,features)
     }
     if (name == "arima"){
-      yp = predict(object,n.ahead = 1)
-      ds$LOAD[i]<- yp$pred
+      ds$LOAD[i]<- ypred[i]
     }
   }
   ypred<-ds$LOAD[(l-forward+1):l]
@@ -63,7 +67,6 @@ iterative<-function(object,dataset,forward,name,title=''){
   result<-list(mape=mape(ytrue,ypred),ytrue=ytrue,ypred=ypred)
   return(result)
 }
-
 
 ###################################
 #Prédictions itérative sur l'année#
@@ -220,16 +223,10 @@ plot(desaison)
 
 #Autocorrélogramme et autocorrélogramme partiel
 acf(desaison,lag.max = 200, main="Autocorrélogramme de la série", xlab="Retard")
-
 pacf(desaison, lag.max = 500, main = "Autocorrélogramme partiel", xlab = "Retard")
-
 
 #Arime forecats
 xarima <- arima(TS, order = c(4,1,2))
-n = length(test$LOAD)
-ytrue <- test$LOAD
-ypred <- predict(xarima, n.ahead = n)
-
 
 #sur 2011
 pred_annuelle_arima=forecast_next_month(xarima,df,year=2011,month_ahead=12,name = "arima")
