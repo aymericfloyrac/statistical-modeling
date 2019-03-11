@@ -215,23 +215,21 @@ test <-df[(df$year == 2011),]
 
 TS = ts(train$LOAD)
 plot(TS)
-#On enlevait la composante saisonnière on différentie
 desaison <- diff(TS,24)
-
 plot(desaison)
+
 #Autocorrélogramme et autocorrélogramme partiel
 acf(desaison,lag.max = 200, main="Autocorrélogramme de la série", xlab="Retard")
-# le dernier a être significatif est pour q = 120
+
 pacf(desaison, lag.max = 500, main = "Autocorrélogramme partiel", xlab = "Retard")
-# le dernier a être significatif est pour p = 140
+
 
 #Arime forecats
-#Vu que ça ne donne rien avec pet q trop grand, on fait plus faible
 xarima <- arima(TS, order = c(4,1,2))
-
 n = length(test$LOAD)
 ytrue <- test$LOAD
 ypred <- predict(xarima, n.ahead = n)
+
 
 #sur 2011
 pred_annuelle_arima=forecast_next_month(xarima,df,year=2011,month_ahead=12,name = "arima")
