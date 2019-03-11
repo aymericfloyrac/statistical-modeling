@@ -27,6 +27,11 @@ iterative<-function(object,dataset,forward,name,title=''){
   l<-length(ds$LOAD)
   ytrue<-ds$LOAD[(l-forward+1):l]
   ds$LOAD[(l-forward+1):l]<-rep(0,forward) #on remplit la colonne de LOADs inconnue avec des 0 
+  TS <- ts(ds$LOAD[0:(l-forward)])
+  mod <- arima(TS, order = c(4,1,2))
+  yp <-rep(0,l-forward)
+  p = predict(mod,n.ahead = forward+1)
+  ypred = c(yp,p$pred)
   for (i in seq(l-forward+1,l)){
     features<-ds[i,]
     features$prevload_24<-ds$LOAD[(i-24)]
@@ -48,11 +53,6 @@ iterative<-function(object,dataset,forward,name,title=''){
       ds$LOAD[i]<-predict(object,features)
     }
     if (name == "arima"){  
-      TS <- ts(ds$LOAD[0:(l-forward)])
-      mod <- arima(TS, order = c(4,1,2))
-      yp <-rep(0,l-forward)
-      p = predict(mod,n.ahead = forward+1)
-      ypred = c(yp,p$pred)
       ds$LOAD[i]<- ypred[i]
     }
   }
@@ -66,6 +66,7 @@ iterative<-function(object,dataset,forward,name,title=''){
   result<-list(mape=mape(ytrue,ypred),ytrue=ytrue,ypred=ypred)
   return(result)
 }
+
 
 ###################################
 #Prédictions itérative sur l'année#
