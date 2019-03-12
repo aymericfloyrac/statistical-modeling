@@ -132,6 +132,9 @@ g <- gam(formula = LOAD~s(hour,k=20,bs='cc')+s(month,k=10,bs='cc')+notworking+he
 summary(g)
 plot(g,shade=T,residuals = T)
 
+#normalité des résidus
+r<-residuals(g)
+ks.test(x = r,y=pnorm,mean=0, sd=sd(r),alternative = 'two.sided')
 
 #Sur 2011
 pred_annuelle_gam=forecast_next_month(g,df,year=2011,month_ahead=12,name = 'gam')
@@ -140,7 +143,6 @@ error_table_gam
 #pour le code latex
 xtable(error_table_gam)
 plot_pred_hour(pred_annuelle_gam,'gam')
-gam.check(g)
 stargazer(g, title="Resultats")
 
 
