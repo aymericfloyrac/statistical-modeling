@@ -28,7 +28,7 @@ test <-df[(df$year == 2011),]
 
 TS = ts(train$LOAD)
 plot(TS)
-desaison <- diff(TS,24)
+desaison <- diff(TS,1)
 plot(desaison)
 
 #Autocorrélogramme et autocorrélogramme partiel
