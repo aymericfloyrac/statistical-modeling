@@ -26,25 +26,30 @@ naive_forecast(initial_df,"month")
 train<-df[!(df$year == 2005) | (df$year == 2011),] #2005 compte trop de NA et affecte la saisonnalité
 test <-df[(df$year == 2011),]
 
-TS = ts(train$LOAD)
+TS = ts(train$LOAD, frequency=24)
 plot(TS)
-desaison <- diff(TS,1)
+desaison <- diff(TS,24)
 plot(desaison)
+
 
 #Autocorrélogramme et autocorrélogramme partiel
 acf(desaison,lag.max = 200, main="Autocorrélogramme de la série", xlab="Retard")
 pacf(desaison, lag.max = 500, main = "Autocorrélogramme partiel", xlab = "Retard")
 
+
 #Arime forecats
-xarima <- arima(TS, order = c(4,1,2))
+xarima <- arima(TS, order = c(1,1,2),seasonal=list(order=c(0,0,2),period=24))
+n = length(test$LOAD)
+ytrue <- test$LOAD
+ypred <- predict(xarima, n.ahead = n)
 
 #sur 2011
 pred_annuelle_arima=forecast_next_month(xarima,df,year=2011,month_ahead=12,name = "arima")
 error_table_arima <-get_errors(pred_annuelle_arima)
-error_table_arima
 #pour le code latex
 xtable(error_table_arima)
 plot_pred_hour(pred_annuelle_arima,'arima')
+
 
 
 ############## REGRESSION LINEAIRE #####################
